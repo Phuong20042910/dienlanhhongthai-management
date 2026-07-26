@@ -10,6 +10,7 @@ import { Technicians } from './pages/Technicians';
 import { Customers } from './pages/Customers';
 import { Payslips } from './pages/Payslips';
 import { useAuthStore } from './store/authStore';
+import { useThemeStore } from './store/themeStore';
 
 // Protected Route Component
 const ProtectedRoute = () => {
@@ -23,6 +24,16 @@ const ProtectedRoute = () => {
 };
 
 function App() {
+  const isDarkMode = useThemeStore((state) => state.isDarkMode);
+
+  React.useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
   return (
     <BrowserRouter>
       <Routes>

@@ -28,8 +28,8 @@ export const Customers = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Users className="text-blue-600" /> Quản lý Khách Hàng
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <Users className="text-blue-600 dark:text-blue-400" /> Quản lý Khách Hàng
         </h1>
       </div>
 
@@ -74,7 +74,7 @@ export const Customers = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
                       onClick={() => alert('Chức năng sửa đang được cập nhật!')}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 font-semibold mr-4 transition-colors"
                     >
                       Sửa
                     </button>
@@ -90,7 +90,7 @@ export const Customers = () => {
                           }
                         }
                       }}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-semibold transition-colors"
                     >
                       Xóa
                     </button>

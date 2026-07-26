@@ -1,38 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
-import { ClipboardList, UserCheck, Wrench, AlertCircle } from 'lucide-react';
+import { ClipboardList, UserCheck, Wrench, AlertCircle, Plus } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { OrderFormModal } from '../components/OrderFormModal';
 
 export const Dashboard = () => {
   const [data, setData] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const token = useAuthStore((state) => state.token);
 
+  const fetchStats = async () => {
+    try {
+      const res = await api.get('/stats');
+      setData(res.data);
+    } catch (error) {
+      console.error('Lỗi lấy thống kê', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await api.get('/stats');
-        setData(res.data);
-      } catch (error) {
-        console.error('Lỗi lấy thống kê', error);
-      }
-    };
     if (token) fetchStats();
   }, [token]);
 
   const stats = [
-    { name: 'Đơn cần phân công', value: data?.stats?.unassigned ?? 0, icon: AlertCircle, color: 'text-red-600', bgColor: 'bg-red-100' },
-    { name: 'Đang thực hiện', value: data?.stats?.inProgress ?? 0, icon: Wrench, color: 'text-blue-600', bgColor: 'bg-blue-100' },
-    { name: 'Hoàn thành', value: data?.stats?.completed ?? 0, icon: ClipboardList, color: 'text-green-600', bgColor: 'bg-green-100' },
-    { name: 'Thợ đang nghỉ', value: data?.stats?.techLeave ?? 0, icon: UserCheck, color: 'text-orange-600', bgColor: 'bg-orange-100' },
+    { name: 'Đơn cần phân công', value: data?.stats?.unassigned ?? 0, icon: AlertCircle, color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-100 dark:bg-red-900/30' },
+    { name: 'Đang thực hiện', value: data?.stats?.inProgress ?? 0, icon: Wrench, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
+    { name: 'Hoàn thành', value: data?.stats?.completed ?? 0, icon: ClipboardList, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30' },
+    { name: 'Thợ đang nghỉ', value: data?.stats?.techLeave ?? 0, icon: UserCheck, color: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-100 dark:bg-orange-900/30' },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Tổng Quan</h1>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight transition-colors">Tổng Quan</h1>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md transition-all flex items-center gap-2 hover:-translate-y-0.5"
+        >
+          <Plus size={20} />
           <span className="hidden sm:inline">Tạo đơn mới</span>
-          <span className="sm:hidden">+ Mới</span>
+          <span className="sm:hidden">Mới</span>
         </button>
       </div>
 
@@ -41,13 +48,13 @@ export const Dashboard = () => {
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <div key={stat.name} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-              <div className={`p-3 rounded-full ${stat.bgColor} ${stat.color}`}>
-                <Icon size={24} />
+            <div key={stat.name} className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-5 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+              <div className={`p-3.5 rounded-2xl ${stat.bgColor} ${stat.color} transition-colors`}>
+                <Icon size={26} strokeWidth={2.5} />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">{stat.name}</p>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                <p className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{stat.name}</p>
+                <p className="text-3xl font-extrabold text-gray-900 dark:text-white mt-1">{stat.value}</p>
               </div>
             </div>
           );
@@ -55,32 +62,32 @@ export const Dashboard = () => {
       </div>
 
       {/* Bảng Đơn hàng Gấp / Chưa phân công */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-800">Đơn hàng mới nhất cần phân công</h2>
-          <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">Xem tất cả</button>
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors duration-300">
+        <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex justify-between items-center">
+          <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Đơn hàng mới nhất cần phân công</h2>
+          <button className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold transition-colors">Xem tất cả</button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
-                <th className="px-6 py-3 font-medium">Mã Đơn</th>
-                <th className="px-6 py-3 font-medium">Khách hàng</th>
-                <th className="px-6 py-3 font-medium">Dịch vụ</th>
-                <th className="px-6 py-3 font-medium">Trạng thái</th>
+              <tr className="bg-gray-50/80 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider border-b border-gray-100 dark:border-gray-800">
+                <th className="px-6 py-4 font-semibold">Mã Đơn</th>
+                <th className="px-6 py-4 font-semibold">Khách hàng</th>
+                <th className="px-6 py-4 font-semibold">Dịch vụ</th>
+                <th className="px-6 py-4 font-semibold">Trạng thái</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {data?.urgentOrders?.length === 0 ? (
-                <tr><td colSpan={4} className="px-6 py-6 text-center text-gray-500">Tuyệt vời, không có đơn hàng nào bị tồn đọng!</td></tr>
+                <tr><td colSpan={4} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400 font-medium bg-gray-50/30 dark:bg-gray-900/30">Tuyệt vời, không có đơn hàng nào bị tồn đọng!</td></tr>
               ) : (
                 data?.urgentOrders?.map((item: any) => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.order_code}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{item.customers?.full_name || 'Khách lẻ'}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{item.service_type}</td>
+                  <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-gray-100">{item.order_code}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-700 dark:text-gray-300">{item.customers?.full_name || 'Khách lẻ'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">{item.service_type}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">
                         {item.status === 'PENDING' ? 'Chờ phân công' : item.status}
                       </span>
                     </td>
@@ -91,6 +98,12 @@ export const Dashboard = () => {
           </table>
         </div>
       </div>
+      
+      <OrderFormModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSuccess={() => fetchStats()} 
+      />
     </div>
   );
 };

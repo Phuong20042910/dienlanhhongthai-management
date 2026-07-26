@@ -84,12 +84,12 @@ export const Inventory = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Package className="text-blue-600" /> Quản lý Kho vật tư
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <Package className="text-blue-600 dark:text-blue-400" /> Quản lý Kho vật tư
         </h1>
         <button 
           onClick={() => { setEditingId(null); reset({}); setIsModalOpen(true); }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md transition-all flex items-center gap-2 hover:-translate-y-0.5"
         >
           <Plus size={20} /> Thêm vật tư
         </button>
@@ -125,13 +125,13 @@ export const Inventory = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
                       onClick={() => handleEdit(item)}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 font-semibold mr-4 transition-colors"
                     >
                       Sửa
                     </button>
                     <button 
                       onClick={() => handleDelete(item.id)}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-semibold transition-colors"
                     >
                       Xóa
                     </button>
@@ -181,8 +181,8 @@ export const Inventory = () => {
               </div>
               
               <div className="pt-4 flex justify-end gap-3 mt-6">
-                <button type="button" onClick={() => { setIsModalOpen(false); setEditingId(null); reset({}); }} className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors">Hủy</button>
-                <button type="submit" disabled={isSubmitting} className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
+                <button type="button" onClick={() => { setIsModalOpen(false); setEditingId(null); reset({}); }} className="px-4 py-2.5 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors">Hủy</button>
+                <button type="submit" disabled={isSubmitting} className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed">
                   {isSubmitting ? 'Đang lưu...' : 'Lưu vật tư'}
                 </button>
               </div>

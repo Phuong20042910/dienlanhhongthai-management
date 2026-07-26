@@ -11,7 +11,7 @@ export const MainLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex transition-colors duration-300">
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       
       {/* Vùng nội dung chính, thụt lề khi có sidebar trên desktop */}

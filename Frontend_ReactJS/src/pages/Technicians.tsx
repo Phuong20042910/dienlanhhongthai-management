@@ -22,8 +22,8 @@ export const Technicians = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Users className="text-blue-600" /> Kỹ thuật viên
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <Users className="text-blue-600 dark:text-blue-400" /> Kỹ thuật viên
         </h1>
       </div>
 
@@ -56,7 +56,7 @@ export const Technicians = () => {
                         }
                       }
                     }}
-                    className={`text-xs px-2 py-1 rounded border ${tech.status === 'ACTIVE' ? 'border-red-200 text-red-600 hover:bg-red-50' : 'border-green-200 text-green-600 hover:bg-green-50'}`}
+                    className={`text-xs px-3 py-1.5 rounded-lg border font-semibold shadow-sm transition-all hover:-translate-y-0.5 ${tech.status === 'ACTIVE' ? 'border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30' : 'border-green-200 dark:border-green-900/50 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30'}`}
                   >
                     {tech.status === 'ACTIVE' ? 'Khóa' : 'Mở khóa'}
                   </button>

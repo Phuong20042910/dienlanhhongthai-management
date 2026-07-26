@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../utils/api';
 import { useAuthStore } from '../store/authStore';
 import { ClipboardList, Plus } from 'lucide-react';
+import { OrderFormModal } from '../components/OrderFormModal';
 
 export const Orders = () => {
   const getStatusColor = (status: string) => {
@@ -27,6 +28,7 @@ export const Orders = () => {
   };
 
   const [orders, setOrders] = useState<any[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const token = useAuthStore((state) => state.token);
 
   const fetchOrders = async () => {
@@ -57,10 +59,13 @@ export const Orders = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <ClipboardList className="text-blue-600" /> Quản lý Đơn Hàng
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <ClipboardList className="text-blue-600 dark:text-blue-400" /> Quản lý Đơn Hàng
         </h1>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-medium shadow-sm hover:shadow-md transition-all flex items-center gap-2 hover:-translate-y-0.5"
+        >
           <Plus size={20} /> Tạo Đơn Mới
         </button>
       </div>
@@ -109,10 +114,10 @@ export const Orders = () => {
                     )}
                   </td>
                   <td className="p-4 text-right">
-                    <button className="text-blue-600 hover:text-blue-800 text-sm font-medium mr-4">Chi tiết</button>
+                    <button className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-semibold mr-4 transition-colors">Chi tiết</button>
                     <button 
                       onClick={() => handleDelete(order.id)}
-                      className="text-red-600 hover:text-red-900 text-sm font-medium"
+                      className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 text-sm font-semibold transition-colors"
                     >
                       Xóa
                     </button>
@@ -123,6 +128,12 @@ export const Orders = () => {
           </tbody>
         </table>
       </div>
+      
+      <OrderFormModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onSuccess={() => fetchOrders()} 
+      />
     </div>
   );
 };
