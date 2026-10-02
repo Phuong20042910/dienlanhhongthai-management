@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -7,7 +7,8 @@ import {
   Users, 
   BarChart3, 
   LogOut,
-  Banknote
+  Banknote,
+  Bot
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
@@ -17,12 +18,14 @@ const adminNavItems = [
   { name: 'Kỹ thuật viên', icon: Wrench, path: '/technicians' },
   { name: 'Khách hàng', icon: Users, path: '/customers' },
   { name: 'Báo cáo / Kho', icon: BarChart3, path: '/reports' },
+  { name: 'Trợ lý AI', icon: Bot, path: '/ai-chat' },
 ];
 
 const techNavItems = [
   { name: 'Tổng quan', icon: LayoutDashboard, path: '/' },
   { name: 'Đơn của tôi', icon: ClipboardList, path: '/orders' },
   { name: 'Phiếu lương', icon: Banknote, path: '/payslips' },
+  { name: 'Trợ lý AI', icon: Bot, path: '/ai-chat' },
 ];
 
 export const Sidebar = ({ isOpen, toggleSidebar }: { isOpen: boolean, toggleSidebar: () => void }) => {

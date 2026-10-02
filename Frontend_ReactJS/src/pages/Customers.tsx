@@ -1,22 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../utils/api';
 import { useAuthStore } from '../store/authStore';
 import { Users, Search } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export const Customers = () => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const token = useAuthStore((state) => state.token);
 
+  const fetchCustomers = async () => {
+    try {
+      const res = await api.get('/customers');
+      setCustomers(res.data);
+    } catch (error) {
+      console.error('Lỗi tải khách hàng:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const res = await api.get('/customers');
-        setCustomers(res.data);
-      } catch (error) {
-        console.error('Lỗi tải khách hàng:', error);
-      }
-    };
     if (token) fetchCustomers();
   }, [token]);
 
@@ -73,7 +75,7 @@ export const Customers = () => {
                   <td className="px-6 py-4 text-sm text-gray-500">{c.address}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button 
-                      onClick={() => alert('Chức năng sửa đang được cập nhật!')}
+                      onClick={() => toast.error('Chức năng sửa đang được cập nhật!')}
                       className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 font-semibold mr-4 transition-colors"
                     >
                       Sửa
@@ -83,10 +85,10 @@ export const Customers = () => {
                         if (window.confirm('Bạn có chắc chắn muốn xóa khách hàng này?')) {
                           try {
                             await api.delete(`/customers/${c.id}`);
-                            setCustomers(customers.filter(cust => cust.id !== c.id));
-                            alert('Xóa thành công');
+                            fetchCustomers();
+                            toast.success('Xóa thành công');
                           } catch (err: any) {
-                            alert(err.response?.data?.error || 'Lỗi khi xóa khách hàng');
+                            toast.error(err.response?.data?.error || 'Lỗi khi xóa khách hàng');
                           }
                         }
                       }}

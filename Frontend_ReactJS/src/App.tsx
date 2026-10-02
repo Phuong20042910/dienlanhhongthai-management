@@ -1,4 +1,4 @@
-import React from 'react';
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { MainLayout } from './layouts/MainLayout';
 import { Dashboard } from './pages/Dashboard';
@@ -9,8 +9,10 @@ import { Inventory } from './pages/Inventory';
 import { Technicians } from './pages/Technicians';
 import { Customers } from './pages/Customers';
 import { Payslips } from './pages/Payslips';
+import { AIChat } from './pages/AIChat';
 import { useAuthStore } from './store/authStore';
 import { useThemeStore } from './store/themeStore';
+import { Toaster } from 'react-hot-toast';
 
 // Protected Route Component
 const ProtectedRoute = () => {
@@ -26,7 +28,7 @@ const ProtectedRoute = () => {
 function App() {
   const isDarkMode = useThemeStore((state) => state.isDarkMode);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
@@ -36,6 +38,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <Toaster position="top-right" />
       <Routes>
         {/* Public Route */}
         <Route path="/login" element={<Login />} />
@@ -50,6 +53,7 @@ function App() {
             <Route path="customers" element={<Customers />} />
             <Route path="reports" element={<Inventory />} /> {/* Tạm gán báo cáo sang Inventory để xem chức năng Kho */}
             <Route path="payslips" element={<Payslips />} />
+            <Route path="ai-chat" element={<AIChat />} />
           </Route>
         </Route>
 

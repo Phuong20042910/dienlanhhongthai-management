@@ -9,3 +9,12 @@
 html {
   font-family: var(--font-sans);
 }
+
+/* Ẩn thanh cuộn dọc và ngang nhưng vẫn cho phép cuộn */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

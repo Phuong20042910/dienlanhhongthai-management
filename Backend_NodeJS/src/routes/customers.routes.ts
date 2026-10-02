@@ -40,6 +40,7 @@ router.post('/', requireRole(['BOSS', 'ADMIN']), customersController.createCusto
 router.patch('/:id', requireRole(['BOSS', 'ADMIN']), customersController.updateCustomer);
 
 router.get('/:id', requireRole(['BOSS', 'ADMIN']), customersController.getCustomerById);
+router.get('/:id/history', requireRole(['BOSS', 'ADMIN', 'TECHNICIAN']), customersController.getCustomerHistory);
 router.delete('/:id', requireRole(['BOSS', 'ADMIN']), customersController.deleteCustomer);
 
 export default router;

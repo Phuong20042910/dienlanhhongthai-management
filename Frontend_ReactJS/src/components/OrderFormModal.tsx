@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Loader2, Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -78,7 +79,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
 
   const handleCreateCustomer = async () => {
     if (!newCustomer.full_name || !newCustomer.phone) {
-      alert('Vui lòng nhập đủ Tên và Số điện thoại');
+      toast.error('Vui lòng nhập đủ Tên và Số điện thoại');
       return;
     }
     try {
@@ -90,7 +91,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
       setIsCreatingCustomer(false);
       setNewCustomer({ full_name: '', phone: '', address: '' });
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Lỗi khi tạo khách hàng');
+      toast.error(error.response?.data?.error || 'Lỗi khi tạo khách hàng');
     } finally {
       setIsSubmittingCustomer(false);
     }
@@ -108,7 +109,7 @@ export const OrderFormModal: React.FC<OrderFormModalProps> = ({ isOpen, onClose,
       onSuccess();
       onClose();
     } catch (error: any) {
-      alert(error.response?.data?.error || 'Lỗi khi tạo đơn hàng');
+      toast.error(error.response?.data?.error || 'Lỗi khi tạo đơn hàng');
     }
   };
 

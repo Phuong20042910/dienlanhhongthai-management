@@ -51,7 +51,8 @@ export const ordersController = {
         description, 
         address, 
         priority,
-        technician_id
+        technician_id,
+        is_warranty
       } = req.body;
 
       if (!customer_id || !service_type || !address) {
@@ -70,6 +71,7 @@ export const ordersController = {
           address,
           priority: priority || 'NORMAL',
           technician_id: technician_id || null,
+          is_warranty: is_warranty || false,
           created_by: req.user?.id
         }])
         .select()

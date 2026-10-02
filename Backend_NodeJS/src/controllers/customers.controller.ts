@@ -82,6 +82,26 @@ export const customersController = {
     }
   },
 
+  // Lấy lịch sử sửa chữa của khách hàng
+  async getCustomerHistory(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          technicians(id, users(full_name))
+        `)
+        .eq('customer_id', id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
   // Xóa khách hàng
   async deleteCustomer(req: Request, res: Response) {
     try {

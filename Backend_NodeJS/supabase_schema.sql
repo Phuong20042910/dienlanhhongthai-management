@@ -74,9 +74,11 @@ CREATE TABLE products (
   category VARCHAR(100),
   unit VARCHAR(50),
   unit_price DECIMAL(15,2) NOT NULL DEFAULT 0,
+  technician_price DECIMAL(15,2) DEFAULT 0,
   unit_cost DECIMAL(15,2) DEFAULT 0,
   stock_quantity INTEGER DEFAULT 0,
   min_stock_alert INTEGER DEFAULT 5,
+  image_url TEXT,
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -100,6 +102,7 @@ CREATE TABLE orders (
   discount DECIMAL(15,2) DEFAULT 0,
   total_amount DECIMAL(15,2) DEFAULT 0,
   payment_status payment_status NOT NULL DEFAULT 'UNPAID',
+  is_warranty BOOLEAN DEFAULT FALSE,
   note TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ

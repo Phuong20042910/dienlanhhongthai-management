@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../utils/api';
 import { useAuthStore } from '../store/authStore';
 import { ClipboardList, Plus } from 'lucide-react';
 import { OrderFormModal } from '../components/OrderFormModal';
+import toast from 'react-hot-toast';
 
 export const Orders = () => {
   const getStatusColor = (status: string) => {
@@ -49,9 +50,9 @@ export const Orders = () => {
       try {
         await api.delete(`/orders/${id}`);
         fetchOrders();
-        alert('Xóa thành công');
+        toast.success('Xóa đơn hàng thành công');
       } catch (err: any) {
-        alert(err.response?.data?.error || 'Lỗi khi xóa đơn hàng');
+        toast.error(err.response?.data?.error || 'Lỗi khi xóa đơn hàng');
       }
     }
   };

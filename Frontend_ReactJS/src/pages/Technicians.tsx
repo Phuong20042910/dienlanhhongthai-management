@@ -1,21 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../utils/api';
 import { useAuthStore } from '../store/authStore';
-import { Users } from 'lucide-react';
+import { Users, Phone, Star, Wrench, BadgeCheck, XCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export const Technicians = () => {
   const [techs, setTechs] = useState<any[]>([]);
   const token = useAuthStore((state) => state.token);
 
+  const fetchTechs = async () => {
+    try {
+      const res = await api.get('/profiles?role=TECHNICIAN');
+      setTechs(res.data);
+    } catch (error) {
+      console.error('Lỗi tải thợ:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchTechs = async () => {
-      try {
-        const res = await api.get('/profiles?role=TECHNICIAN');
-        setTechs(res.data);
-      } catch (error) {
-        console.error('Lỗi tải thợ:', error);
-      }
-    };
     if (token) fetchTechs();
   }, [token]);
 
@@ -45,14 +47,14 @@ export const Technicians = () => {
                   </span>
                   <button
                     onClick={async () => {
-                      if (window.confirm(`Bạn có chắc chắn muốn chuyển trạng thái của ${tech.full_name} sang ${tech.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'}?`)) {
+                      const newStatus = tech.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+                      if (window.confirm(`Bạn có chắc chắn muốn chuyển trạng thái của ${tech.full_name} sang ${newStatus}?`)) {
                         try {
-                          await api.patch(`/profiles/${tech.id}/status`, {
-                            status: tech.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
-                          });
-                          setTechs(techs.map(t => t.id === tech.id ? { ...t, status: tech.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' } : t));
+                          await api.patch(`/profiles/${tech.id}/status`, { status: newStatus });
+                          fetchTechs();
+                          toast.success('Cập nhật trạng thái thành công');
                         } catch (err: any) {
-                          alert(err.response?.data?.error || 'Lỗi khi cập nhật trạng thái');
+                          toast.error(err.response?.data?.error || 'Lỗi khi cập nhật trạng thái');
                         }
                       }
                     }}
