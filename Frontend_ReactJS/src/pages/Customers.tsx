@@ -3,10 +3,12 @@ import api from '../utils/api';
 import { useAuthStore } from '../store/authStore';
 import { Users, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 export const Customers = () => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const token = useAuthStore((state) => state.token);
 
   const fetchCustomers = async () => {
@@ -15,6 +17,16 @@ export const Customers = () => {
       setCustomers(res.data);
     } catch (error) {
       console.error('Lỗi tải khách hàng:', error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await api.delete(`/customers/${id}`);
+      fetchCustomers();
+      toast.success('Xóa thành công');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Lỗi khi xóa khách hàng');
     }
   };
 
@@ -81,17 +93,7 @@ export const Customers = () => {
                       Sửa
                     </button>
                     <button 
-                      onClick={async () => {
-                        if (window.confirm('Bạn có chắc chắn muốn xóa khách hàng này?')) {
-                          try {
-                            await api.delete(`/customers/${c.id}`);
-                            fetchCustomers();
-                            toast.success('Xóa thành công');
-                          } catch (err: any) {
-                            toast.error(err.response?.data?.error || 'Lỗi khi xóa khách hàng');
-                          }
-                        }
-                      }}
+                      onClick={() => setDeleteId(c.id)}
                       className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-semibold transition-colors"
                     >
                       Xóa
@@ -103,6 +105,16 @@ export const Customers = () => {
           </tbody>
         </table>
       </div>
+
+      <ConfirmModal
+        isOpen={!!deleteId}
+        title="Xóa khách hàng"
+        message="Bạn có chắc chắn muốn xóa khách hàng này không? Hành động này không thể hoàn tác."
+        onConfirm={() => deleteId && handleDelete(deleteId)}
+        onCancel={() => setDeleteId(null)}
+        confirmText="Xóa"
+        isDestructive={true}
+      />
     </div>
   );
 };

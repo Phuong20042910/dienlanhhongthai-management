@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../utils/api';
-import { ClipboardList, UserCheck, Wrench, AlertCircle, Plus } from 'lucide-react';
+import { ClipboardList, UserCheck, Wrench, AlertCircle, Plus, Banknote, TrendingDown } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { OrderFormModal } from '../components/OrderFormModal';
 
@@ -23,6 +23,20 @@ export const AdminDashboard = () => {
   }, [token]);
 
   const stats = [
+    { 
+      name: 'Tổng doanh thu', 
+      value: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data?.stats?.revenue ?? 0), 
+      icon: Banknote, 
+      color: 'text-emerald-600 dark:text-emerald-400', 
+      bgColor: 'bg-emerald-100 dark:bg-emerald-900/30' 
+    },
+    { 
+      name: 'Tổng chi phí (Khuyến mãi)', 
+      value: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data?.stats?.cost ?? 0), 
+      icon: TrendingDown, 
+      color: 'text-rose-600 dark:text-rose-400', 
+      bgColor: 'bg-rose-100 dark:bg-rose-900/30' 
+    },
     { name: 'Đơn cần phân công', value: data?.stats?.unassigned ?? 0, icon: AlertCircle, color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-100 dark:bg-red-900/30' },
     { name: 'Đang thực hiện', value: data?.stats?.inProgress ?? 0, icon: Wrench, color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' },
     { name: 'Hoàn thành', value: data?.stats?.completed ?? 0, icon: ClipboardList, color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30' },

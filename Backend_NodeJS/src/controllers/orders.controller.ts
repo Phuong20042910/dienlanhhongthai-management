@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { supabase } from '../config/supabase';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { payrollController } from './payroll.controller';
 
 // Hàm helper tạo order_code ngẫu nhiên
 const generateOrderCode = () => {
@@ -32,6 +33,19 @@ export const ordersController = {
         } else {
           return res.json([]); // Nếu user chưa có tech profile thì trả mảng rỗng
         }
+      } else if (userRole === 'CUSTOMER') {
+        // Lấy phone từ users
+        const { data: userData } = await supabase.from('users').select('phone').eq('id', userId).single();
+        if (userData?.phone) {
+          const { data: cus } = await supabase.from('customers').select('id').eq('phone', userData.phone).single();
+          if (cus) {
+            query = query.eq('customer_id', cus.id);
+          } else {
+            return res.json([]);
+          }
+        } else {
+          return res.json([]);
+        }
       }
 
       const { data, error } = await query;
@@ -42,7 +56,63 @@ export const ordersController = {
     }
   },
 
-  // Tạo đơn hàng mới
+  // Khách hàng tự đặt lịch (Customer Booking)
+  async bookOrder(req: AuthRequest, res: Response) {
+    try {
+      const { service_type, description, address, priority } = req.body;
+      const userId = req.user?.id;
+
+      if (!service_type || !address) {
+        return res.status(400).json({ error: 'Thiếu thông tin bắt buộc (service_type, address)' });
+      }
+
+      // Tìm customer_id qua phone
+      const { data: userData } = await supabase.from('users').select('phone').eq('id', userId).single();
+      if (!userData?.phone) {
+        return res.status(400).json({ error: 'Tài khoản chưa cập nhật số điện thoại' });
+      }
+
+      let { data: cus } = await supabase.from('customers').select('id').eq('phone', userData.phone).single();
+      
+      // Nếu chưa có trong bảng customers, tự động tạo mới (fallback)
+      if (!cus) {
+        const { data: newUser } = await supabase.from('users').select('full_name').eq('id', userId).single();
+        const { data: newCus, error: createErr } = await supabase.from('customers').insert([{
+          full_name: newUser?.full_name || 'Khách hàng',
+          phone: userData.phone,
+          address: address,
+          note: 'Tạo tự động khi đặt lịch'
+        }]).select('id').single();
+        
+        if (createErr) throw createErr;
+        cus = newCus;
+      }
+
+      const order_code = generateOrderCode();
+
+      const { data, error } = await supabase
+        .from('orders')
+        .insert([{ 
+          order_code,
+          customer_id: cus.id,
+          service_type,
+          description,
+          address,
+          priority: priority || 'NORMAL',
+          is_warranty: false,
+          created_by: userId
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      res.status(201).json(data);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  // Tạo đơn hàng mới (Dành cho Admin/Boss)
   async createOrder(req: AuthRequest, res: Response) {
     try {
       const { 
@@ -90,12 +160,58 @@ export const ordersController = {
       const { id } = req.params;
       const updates = req.body; // { status, technician_id, note... }
 
+      // Lấy thông tin order cũ
+      const { data: oldOrder } = await supabase
+        .from('orders')
+        .select('status, technician_id, completed_at')
+        .eq('id', id)
+        .single();
+
+      // Nếu chuyển sang COMPLETED mà chưa có completed_at thì set
+      if (updates.status === 'COMPLETED' && oldOrder && oldOrder.status !== 'COMPLETED') {
+        if (!updates.completed_at && !oldOrder.completed_at) {
+          updates.completed_at = new Date().toISOString();
+        }
+      }
+
       const { data, error } = await supabase
         .from('orders')
         .update(updates)
         .eq('id', id)
         .select()
         .single();
+
+      if (error) throw error;
+
+      // Luôn đồng bộ lại KPI và Lương cho Thợ nếu có technician_id
+      // Điều này đảm bảo dữ liệu luôn chính xác theo thời gian thực (realtime sync)
+      const techIdToSync = data.technician_id || (oldOrder ? oldOrder.technician_id : null);
+      
+      if (techIdToSync) {
+        // Đếm lại chính xác số đơn hoàn thành
+        const { count } = await supabase
+          .from('orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('technician_id', techIdToSync)
+          .eq('status', 'COMPLETED');
+
+        // Cập nhật vào profile
+        await supabase
+          .from('technicians')
+          .update({ total_completed: count || 0 })
+          .eq('id', techIdToSync);
+
+        // Lấy user_id để đồng bộ lương
+        const { data: tech } = await supabase
+          .from('technicians')
+          .select('user_id')
+          .eq('id', techIdToSync)
+          .single();
+
+        if (tech && tech.user_id) {
+          await payrollController.syncCurrentMonthPayslip(tech.user_id);
+        }
+      }
 
       if (error) throw error;
       res.json(data);
@@ -141,6 +257,58 @@ export const ordersController = {
       if (error) throw error;
       
       res.json({ message: 'Xóa đơn hàng thành công' });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  // Thêm vật tư vào đơn hàng (Dành cho thợ)
+  async addOrderItem(req: Request, res: Response) {
+    try {
+      const { id } = req.params; // order_id
+      const { product_id, quantity } = req.body;
+
+      if (!product_id || !quantity || quantity <= 0) {
+        return res.status(400).json({ error: 'Sản phẩm và số lượng không hợp lệ' });
+      }
+
+      // Lấy giá của vật tư
+      const { data: product, error: prodErr } = await supabase
+        .from('products')
+        .select('unit_price, stock_quantity')
+        .eq('id', product_id)
+        .single();
+
+      if (prodErr || !product) {
+        return res.status(404).json({ error: 'Không tìm thấy vật tư' });
+      }
+
+      if (product.stock_quantity < quantity) {
+        return res.status(400).json({ error: 'Số lượng vật tư trong kho không đủ' });
+      }
+
+      const total = product.unit_price * quantity;
+
+      // 1. Thêm vào bảng order_items
+      const { error: itemErr } = await supabase
+        .from('order_items')
+        .insert([{
+          order_id: id,
+          product_id,
+          quantity,
+          unit_price: product.unit_price,
+          total
+        }]);
+
+      if (itemErr) throw itemErr;
+
+      // 2. Trừ tồn kho
+      await supabase
+        .from('products')
+        .update({ stock_quantity: product.stock_quantity - quantity })
+        .eq('id', product_id);
+
+      res.status(201).json({ message: 'Đã thêm vật tư thành công' });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

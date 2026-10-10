@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 const schema = z.object({
   name: z.string().min(1, 'Tên vật tư là bắt buộc'),
@@ -40,6 +41,7 @@ export const Inventory = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -107,14 +109,12 @@ export const Inventory = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa vật tư này?')) {
-      try {
-        await api.delete(`/inventory/${id}`);
-        fetchInventory();
-        toast.success('Xóa thành công');
-      } catch (err: any) {
-        toast.error(err.response?.data?.error || 'Lỗi khi xóa vật tư');
-      }
+    try {
+      await api.delete(`/inventory/${id}`);
+      fetchInventory();
+      toast.success('Xóa thành công');
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || 'Lỗi khi xóa vật tư');
     }
   };
 
@@ -471,7 +471,7 @@ export const Inventory = () => {
                       Sửa
                     </button>
                     <button 
-                      onClick={() => handleDelete(item.id)}
+                      onClick={() => setDeleteId(item.id)}
                       className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-semibold transition-colors"
                     >
                       Xóa
@@ -647,7 +647,18 @@ export const Inventory = () => {
           </div>
         </div>
       )}
+      
+      <ConfirmModal
+        isOpen={!!deleteId}
+        title="Xóa vật tư"
+        message="Bạn có chắc chắn muốn xóa vật tư này không? Hành động này không thể hoàn tác."
+        onConfirm={() => { if (deleteId) { handleDelete(deleteId); } setDeleteId(null); }}
+        onCancel={() => setDeleteId(null)}
+        confirmText="Xóa"
+        isDestructive={true}
+      />
     </div>
   );
 };
 
+export default Inventory;

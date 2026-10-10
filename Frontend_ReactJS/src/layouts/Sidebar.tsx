@@ -1,4 +1,3 @@
-
 import { NavLink, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -8,7 +7,11 @@ import {
   BarChart3, 
   LogOut,
   Banknote,
-  Bot
+  Bot,
+  User,
+  ShoppingCart,
+  Wallet,
+  Package
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
@@ -17,15 +20,26 @@ const adminNavItems = [
   { name: 'Đơn hàng', icon: ClipboardList, path: '/orders' },
   { name: 'Kỹ thuật viên', icon: Wrench, path: '/technicians' },
   { name: 'Khách hàng', icon: Users, path: '/customers' },
-  { name: 'Báo cáo / Kho', icon: BarChart3, path: '/reports' },
+  { name: 'Kho vật tư', icon: Package, path: '/inventory' },
+  { name: 'Quản lý Lương', icon: Banknote, path: '/payslips' },
   { name: 'Trợ lý AI', icon: Bot, path: '/ai-chat' },
+  { name: 'Hồ sơ', icon: User, path: '/profile' },
 ];
 
 const techNavItems = [
   { name: 'Tổng quan', icon: LayoutDashboard, path: '/' },
   { name: 'Đơn của tôi', icon: ClipboardList, path: '/orders' },
-  { name: 'Phiếu lương', icon: Banknote, path: '/payslips' },
+  { name: 'Lương & Hoa hồng', icon: Banknote, path: '/payslips' },
   { name: 'Trợ lý AI', icon: Bot, path: '/ai-chat' },
+  { name: 'Hồ sơ', icon: User, path: '/profile' },
+];
+
+const customerNavItems = [
+  { name: 'Đơn hàng của tôi', icon: ClipboardList, path: '/orders' },
+  { name: 'Cửa hàng', icon: ShoppingCart, path: '/shop' },
+  { name: 'Sổ nợ', icon: Wallet, path: '/debts' },
+  { name: 'Trợ lý AI', icon: Bot, path: '/ai-chat' },
+  { name: 'Hồ sơ', icon: User, path: '/profile' },
 ];
 
 export const Sidebar = ({ isOpen, toggleSidebar }: { isOpen: boolean, toggleSidebar: () => void }) => {
@@ -38,7 +52,7 @@ export const Sidebar = ({ isOpen, toggleSidebar }: { isOpen: boolean, toggleSide
     navigate('/login');
   };
 
-  const navItems = user?.role === 'TECHNICIAN' ? techNavItems : adminNavItems;
+  const navItems = user?.role === 'CUSTOMER' ? customerNavItems : (user?.role === 'TECHNICIAN' ? techNavItems : adminNavItems);
 
   return (
     <>

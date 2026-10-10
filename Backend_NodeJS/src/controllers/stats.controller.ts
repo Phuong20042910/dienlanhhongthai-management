@@ -43,7 +43,22 @@ export const statsController = {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      if (err1 || err2 || err3 || err4 || err5) {
+      // 6. Tính tổng doanh thu (các đơn đã COMPLETED)
+      const { data: revenueData, error: err6 } = await supabase
+        .from('orders')
+        .select('total_amount, sub_total, discount')
+        .eq('status', 'COMPLETED');
+
+      let totalRevenue = 0;
+      let totalDiscountCost = 0;
+      if (revenueData) {
+        revenueData.forEach((order: any) => {
+          totalRevenue += Number(order.total_amount || order.sub_total || 0);
+          totalDiscountCost += Number(order.discount || 0);
+        });
+      }
+
+      if (err1 || err2 || err3 || err4 || err5 || err6) {
         throw new Error('Lỗi truy vấn thống kê');
       }
 
@@ -52,7 +67,9 @@ export const statsController = {
           unassigned: unassignedCount || 0,
           inProgress: inProgressCount || 0,
           completed: completedCount || 0,
-          techLeave: techLeaveCount || 0
+          techLeave: techLeaveCount || 0,
+          revenue: totalRevenue,
+          cost: totalDiscountCost // Tạm tính chi phí = tổng khuyến mãi đã giảm cho khách
         },
         urgentOrders: urgentOrders || []
       });

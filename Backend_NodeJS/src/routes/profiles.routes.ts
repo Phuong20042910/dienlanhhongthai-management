@@ -16,6 +16,8 @@ router.use(requireAuth);
  *       - bearerAuth: []
  */
 router.get('/', profilesController.getProfiles);
+router.get('/me', profilesController.getMe);
+router.patch('/me', profilesController.updateProfile);
 router.patch('/:id/status', profilesController.updateStatus);
 
 export default router;

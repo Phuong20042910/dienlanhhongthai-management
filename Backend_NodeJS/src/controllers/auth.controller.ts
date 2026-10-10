@@ -58,6 +58,22 @@ export const authController = {
         if (techError) {
           console.error("Lỗi tạo technician profile:", techError);
         }
+      } else if (role === 'CUSTOMER') {
+        // Thêm dữ liệu vào bảng `customers`
+        const { error: cusError } = await supabase
+          .from('customers')
+          .insert([
+            {
+              full_name,
+              phone: phone || '',
+              address: '',
+              note: 'Tự đăng ký qua app'
+            }
+          ]);
+        
+        if (cusError) {
+          console.error("Lỗi tạo customer profile:", cusError);
+        }
       }
 
       res.status(201).json({ message: 'Tạo tài khoản thành công', userId });
@@ -102,6 +118,56 @@ export const authController = {
       });
     } catch (error: any) {
       console.error('Lỗi login:', error);
+      res.status(500).json({ error: 'Lỗi server' });
+    }
+  },
+
+  // Gửi email khôi phục mật khẩu
+  async forgotPassword(req: Request, res: Response) {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ error: 'Vui lòng cung cấp email' });
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'http://localhost:3000/reset-password', // Change this in production
+      });
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      res.json({ message: 'Vui lòng kiểm tra email để đặt lại mật khẩu' });
+    } catch (error: any) {
+      console.error('Lỗi forgotPassword:', error);
+      res.status(500).json({ error: 'Lỗi server' });
+    }
+  },
+
+  // Đặt lại mật khẩu (Dành cho Boss/Admin để cấp lại mật khẩu cho nhân viên)
+  async resetPasswordByAdmin(req: Request, res: Response) {
+    try {
+      const { targetUserId, newPassword } = req.body;
+
+      if (!targetUserId || !newPassword) {
+        return res.status(400).json({ error: 'Cần cung cấp targetUserId và newPassword' });
+      }
+
+      // Đổi mật khẩu trực tiếp bằng quyền Admin (Bypass quá trình gửi email)
+      const { error } = await supabase.auth.admin.updateUserById(
+        targetUserId,
+        { password: newPassword }
+      );
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      res.json({ message: 'Đã đặt lại mật khẩu mới cho nhân viên thành công' });
+    } catch (error: any) {
+      console.error('Lỗi resetPasswordByAdmin:', error);
       res.status(500).json({ error: 'Lỗi server' });
     }
   }

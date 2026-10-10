@@ -18,8 +18,10 @@ router.use(requireAuth);
 router.get('/', ordersController.getOrders);
 
 router.post('/', ordersController.createOrder);
+router.post('/book', ordersController.bookOrder);
 router.patch('/:id', ordersController.updateOrder);
 router.get('/:id', ordersController.getOrderById);
+router.post('/:id/items', ordersController.addOrderItem);
 router.delete('/:id', ordersController.deleteOrder);
 
 export default router;

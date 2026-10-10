@@ -10,7 +10,7 @@ const registerSchema = z.object({
   email: z.string().email('Email không hợp lệ'),
   password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
   full_name: z.string().min(2, 'Họ tên quá ngắn'),
-  role: z.enum(['ADMIN', 'TECHNICIAN', 'BOSS']),
+  role: z.enum(['ADMIN', 'TECHNICIAN', 'BOSS', 'CUSTOMER']),
   phone: z.string().min(10, 'Số điện thoại không hợp lệ'),
 });
 
@@ -28,7 +28,7 @@ export const Register = () => {
   } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      role: 'TECHNICIAN'
+      role: 'CUSTOMER'
     }
   });
 
@@ -131,6 +131,7 @@ export const Register = () => {
                   {...register('role')}
                   className="appearance-none block w-full px-4 py-3 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-800 rounded-xl shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm transition-all duration-200"
                 >
+                  <option value="CUSTOMER">Khách hàng</option>
                   <option value="TECHNICIAN">Thợ kỹ thuật</option>
                   <option value="ADMIN">Quản trị viên</option>
                   <option value="BOSS">Chủ cửa hàng</option>

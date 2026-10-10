@@ -10,9 +10,17 @@ import { Technicians } from './pages/Technicians';
 import { Customers } from './pages/Customers';
 import { Payslips } from './pages/Payslips';
 import { AIChat } from './pages/AIChat';
+import { CustomerOrders } from './pages/CustomerOrders';
+import { TechnicianOrders } from './pages/TechnicianOrders';
+import { CustomerShop } from './pages/CustomerShop';
+import { CustomerDebts } from './pages/CustomerDebts';
 import { useAuthStore } from './store/authStore';
 import { useThemeStore } from './store/themeStore';
 import { Toaster } from 'react-hot-toast';
+
+import { ForgotPassword } from './pages/ForgotPassword';
+import { Profile } from './pages/Profile';
+import { PayrollManagement } from './pages/PayrollManagement';
 
 // Protected Route Component
 const ProtectedRoute = () => {
@@ -23,6 +31,27 @@ const ProtectedRoute = () => {
   }
   
   return <Outlet />;
+};
+
+// Wrapper để tự động phân luồng giao diện Orders
+const OrdersRoute = () => {
+  const role = useAuthStore((state) => state.user?.role);
+  if (role === 'CUSTOMER') {
+    return <CustomerOrders />;
+  }
+  if (role === 'TECHNICIAN') {
+    return <TechnicianOrders />;
+  }
+  return <Orders />;
+};
+
+// Wrapper để tự động phân luồng giao diện Lương (Boss xem quản lý, Thợ xem cá nhân)
+const PayrollRoute = () => {
+  const role = useAuthStore((state) => state.user?.role);
+  if (role === 'BOSS' || role === 'ADMIN') {
+    return <PayrollManagement />;
+  }
+  return <Payslips />;
 };
 
 function App() {
@@ -43,17 +72,21 @@ function App() {
         {/* Public Route */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Dashboard />} />
-            <Route path="orders" element={<Orders />} />
+            <Route path="orders" element={<OrdersRoute />} />
+            <Route path="shop" element={<CustomerShop />} />
+            <Route path="debts" element={<CustomerDebts />} />
             <Route path="technicians" element={<Technicians />} />
             <Route path="customers" element={<Customers />} />
-            <Route path="reports" element={<Inventory />} /> {/* Tạm gán báo cáo sang Inventory để xem chức năng Kho */}
-            <Route path="payslips" element={<Payslips />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="payslips" element={<PayrollRoute />} />
             <Route path="ai-chat" element={<AIChat />} />
+            <Route path="profile" element={<Profile />} />
           </Route>
         </Route>
 

@@ -15,7 +15,7 @@ router.use(requireAuth);
  *     security:
  *       - bearerAuth: []
  */
-router.get('/', requireRole(['BOSS', 'ADMIN']), inventoryController.getProducts);
+router.get('/', requireRole(['BOSS', 'ADMIN', 'TECHNICIAN', 'CUSTOMER']), inventoryController.getProducts);
 
 /**
  * @openapi

@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Wrench, Loader2 } from 'lucide-react';
 import api from '../utils/api';
 import { useAuthStore } from '../store/authStore';
+import toast from 'react-hot-toast';
 
 const loginSchema = z.object({
   email: z.string().email('Email không hợp lệ'),
@@ -120,6 +121,15 @@ export const Login = () => {
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none">
                   Ghi nhớ đăng nhập
                 </label>
+              </div>
+
+              <div className="text-sm">
+                <Link
+                  to="/forgot-password"
+                  className="font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-500 transition-colors"
+                >
+                  Quên mật khẩu?
+                </Link>
               </div>
             </div>
 

@@ -94,7 +94,7 @@ export const TechnicianDashboard = () => {
         </div>
         <p className="text-3xl font-bold">{earnings.total_salary.toLocaleString('vi-VN')} đ</p>
         <div className="mt-4 flex gap-4 text-sm text-blue-200">
-          <div><span className="font-semibold text-white">{earnings.working_days}</span> ngày công</div>
+          <div><span className="font-semibold text-white">{earnings.working_days}</span> đơn xong</div>
           <div><span className="font-semibold text-white">{earnings.bonus.toLocaleString('vi-VN')} đ</span> tiền thưởng</div>
         </div>
       </div>
