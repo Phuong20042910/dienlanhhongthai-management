@@ -3,8 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Wrench, Loader2, ArrowLeft } from 'lucide-react';
+import { Wrench, Loader2, ArrowLeft, Sun, Moon } from 'lucide-react';
 import api from '../utils/api';
+import { useThemeStore } from '../store/themeStore';
 
 const registerSchema = z.object({
   email: z.string().email('Email không hợp lệ'),
@@ -18,6 +19,8 @@ type RegisterForm = z.infer<typeof registerSchema>;
 
 export const Register = () => {
   const navigate = useNavigate();
+  const isDarkMode = useThemeStore((state) => state.isDarkMode);
+  const toggleDarkMode = useThemeStore((state) => state.toggleDarkMode);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -48,12 +51,31 @@ export const Register = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-300">
-      
-      {/* Background Decorators */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] rounded-full bg-blue-400/20 dark:bg-blue-900/20 blur-[120px]"></div>
-        <div className="absolute top-[50%] -left-[10%] w-[40%] h-[60%] rounded-full bg-indigo-400/20 dark:bg-indigo-900/20 blur-[120px]"></div>
+      {/* Nút quay lại Landing Page ở góc trên bên trái */}
+      <div className="absolute top-6 left-6 z-20">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur border border-gray-200 dark:border-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 shadow-sm transition-all"
+        >
+          <ArrowLeft size={16} />
+          <span>Về Trang chủ Website</span>
+        </Link>
       </div>
+
+      {/* Nút chuyển đổi Theme Sáng / Tối ở góc trên bên phải */}
+      <div className="absolute top-6 right-6 z-20">
+        <button
+          type="button"
+          onClick={toggleDarkMode}
+          className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 shadow-sm transition-all cursor-pointer"
+          title={isDarkMode ? 'Chuyển sang Giao diện Sáng' : 'Chuyển sang Giao diện Tối'}
+        >
+          {isDarkMode ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} />}
+        </button>
+      </div>
+      
+      {/* Background Decorators (GPU-friendly Radial Gradients) */}
+      <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none bg-[radial-gradient(ellipse_60%_60%_at_80%_20%,rgba(59,130,246,0.12),transparent_70%),radial-gradient(ellipse_60%_60%_at_20%_80%,rgba(99,102,241,0.12),transparent_70%)] dark:bg-[radial-gradient(ellipse_60%_60%_at_80%_20%,rgba(59,130,246,0.15),transparent_70%),radial-gradient(ellipse_60%_60%_at_20%_80%,rgba(99,102,241,0.15),transparent_70%)]" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center relative z-10">
         <div className="flex justify-center">
@@ -70,7 +92,7 @@ export const Register = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl py-8 px-4 shadow-2xl sm:rounded-3xl sm:px-10 border border-white/20 dark:border-gray-800 transition-colors duration-300">
+        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md py-8 px-4 shadow-xl sm:rounded-3xl sm:px-10 border border-white/40 dark:border-gray-800 transition-colors duration-200">
           <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
             {error && (
               <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-xl text-sm text-center font-medium border border-red-100 dark:border-red-900/50">

@@ -1,18 +1,25 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useAuthStore } from '../store/authStore';
-import { Wrench, CheckCircle, Clock, MapPin, Phone } from 'lucide-react';
+import { Wrench, CheckCircle, Clock, MapPin, Phone, Navigation, MessageCircle, Printer, ExternalLink, Camera } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { AddMaterialModal } from '../components/AddMaterialModal';
 import { QuoteModal } from '../components/QuoteModal';
+import { InvoiceModal } from '../components/InvoiceModal';
+import { InspectionModal } from '../components/InspectionModal';
+import { getGoongMapUrl, getGoogleNavUrl, getZaloChatUrl } from '../utils/goongMap';
+
 
 export const TechnicianOrders = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [quoteOrderId, setQuoteOrderId] = useState<string | null>(null);
+  const [invoiceOrder, setInvoiceOrder] = useState<any | null>(null);
+  const [inspectionOrder, setInspectionOrder] = useState<any | null>(null);
   const token = useAuthStore((state) => state.token);
+
 
   const fetchOrders = async () => {
     try {
@@ -82,35 +89,100 @@ export const TechnicianOrders = () => {
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white">{order.service_type}</h3>
                   <p className="text-sm font-mono text-gray-500 mt-1">{order.order_code}</p>
                 </div>
-                {getStatusBadge(order.status)}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setInvoiceOrder(order)}
+                    title="In Phiếu Dịch Vụ / Bàn Giao"
+                    className="p-2 bg-gray-100 hover:bg-blue-50 text-gray-600 hover:text-blue-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:text-blue-400 rounded-xl transition-colors"
+                  >
+                    <Printer size={18} />
+                  </button>
+                  {getStatusBadge(order.status)}
+                </div>
               </div>
 
               <div className="space-y-3 mb-6 bg-gray-50 dark:bg-gray-900/50 p-4 rounded-2xl flex-1">
+                {/* Địa chỉ & Goong Map */}
                 <div className="flex items-start gap-3">
-                  <MapPin size={18} className="text-gray-400 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Địa chỉ khách hàng</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{order.address}</p>
+                  <MapPin size={18} className="text-red-500 mt-1 shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Địa chỉ khách hàng</p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200 mt-0.5">{order.address}</p>
+                    
+                    {/* Các nút Bản đồ Goong & Chỉ đường */}
+                    {order.address && (
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
+                        <a
+                          href={getGoongMapUrl(order.address)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs font-bold transition-all border border-emerald-200 dark:border-emerald-800"
+                        >
+                          <Navigation size={13} className="text-emerald-600" />
+                          <span>Bản đồ Goong</span>
+                          <ExternalLink size={11} />
+                        </a>
+
+                        <a
+                          href={getGoogleNavUrl(order.address)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-semibold transition-all border border-blue-200 dark:border-blue-800"
+                        >
+                          <span>Chỉ đường (Maps)</span>
+                          <ExternalLink size={11} />
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
-                <div className="flex items-start gap-3">
-                  <Phone size={18} className="text-gray-400 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{order.customers?.full_name}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{order.customers?.phone}</p>
+                {/* Khách hàng & Gọi/Zalo 1 chạm */}
+                <div className="flex items-start gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <Phone size={18} className="text-blue-500 mt-1 shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Khách hàng</p>
+                    <div className="flex flex-wrap items-center justify-between gap-2 mt-0.5">
+                      <div>
+                        <p className="text-sm font-bold text-gray-900 dark:text-white">{order.customers?.full_name || 'Khách hàng'}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 font-mono">{order.customers?.phone || 'Chưa có SĐT'}</p>
+                      </div>
+
+                      {order.customers?.phone && (
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`tel:${order.customers.phone}`}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all hover:scale-105"
+                          >
+                            <Phone size={13} />
+                            <span>Gọi ngay</span>
+                          </a>
+
+                          <a
+                            href={getZaloChatUrl(order.customers.phone)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all hover:scale-105"
+                          >
+                            <MessageCircle size={13} />
+                            <span>Zalo</span>
+                          </a>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 {order.description && (
                   <div className="flex items-start gap-3 pt-2 border-t border-gray-200 dark:border-gray-700 mt-2">
-                    <Clock size={18} className="text-gray-400 mt-0.5" />
+                    <Clock size={18} className="text-gray-400 mt-0.5 shrink-0" />
                     <div>
                       <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Ghi chú bệnh</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5 italic">{order.description}</p>
                     </div>
                   </div>
                 )}
+
                 
                 {/* Thông tin báo giá nếu đã có */}
                 {(order.sub_total > 0 || order.note) && (
@@ -188,19 +260,36 @@ export const TechnicianOrders = () => {
                       Cập nhật Báo Giá
                     </button>
                     <button 
+                      onClick={() => setInspectionOrder(order)}
+                      className="col-span-2 py-3 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
+                    >
+                      <Camera size={18} /> Nghiệm Thu & Ký Nhận
+                      {(order.before_images?.length > 0 || order.after_images?.length > 0 || order.customer_signature) && (
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      )}
+                    </button>
+                    <button 
                       onClick={() => updateStatus(order.id, 'COMPLETED')}
                       className="col-span-2 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold shadow-sm hover:-translate-y-0.5 transition-all"
                     >
-                      Đã hoàn thành
+                      Đã hoàn thành công việc
                     </button>
                   </>
                 ) : (
-                  <button 
-                    disabled
-                    className="col-span-2 py-3 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-xl font-semibold"
-                  >
-                    Không có thao tác
-                  </button>
+                  <div className="col-span-2 flex gap-2">
+                    <button 
+                      onClick={() => setInspectionOrder(order)}
+                      className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+                    >
+                      <Camera size={16} /> Xem Ảnh & Chữ Ký
+                    </button>
+                    <button 
+                      onClick={() => setInvoiceOrder(order)}
+                      className="py-3 px-4 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-xl font-semibold text-sm flex items-center justify-center gap-1.5 transition-all"
+                    >
+                      <Printer size={16} /> In Phiếu
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -228,6 +317,27 @@ export const TechnicianOrders = () => {
           onSuccess={fetchOrders}
         />
       )}
+
+      {/* Modal In Phiếu Dịch Vụ / Bàn Giao */}
+      {invoiceOrder && (
+        <InvoiceModal
+          isOpen={true}
+          order={invoiceOrder}
+          onClose={() => setInvoiceOrder(null)}
+        />
+      )}
+
+      {/* Modal Nghiệm Thu, Chụp Ảnh Trước/Sau & Ký Nhận */}
+      {inspectionOrder && (
+        <InspectionModal
+          isOpen={true}
+          order={inspectionOrder}
+          onClose={() => setInspectionOrder(null)}
+          onSuccess={fetchOrders}
+        />
+      )}
     </div>
   );
 };
+
+

@@ -38,4 +38,10 @@ npm run dev
 ```
 
 ## 📚 Tài Liệu (Docs)
-Hãy tham khảo thư mục `docs/` để đọc chi tiết các nguyên tắc thiết kế, kiến trúc hệ thống và quy tắc tính lương.
+Hãy tham khảo thư mục `docs/` để đọc chi tiết các nguyên tắc thiết kế, kiến trúc hệ thống và quy tắc tính lương:
+- [Kế Hoạch Hoàn Thiện Hệ Thống Toàn Diện](docs/KE_HOACH_HOAN_THIEN_TINH_NANG.md) 🌟 *(Phân tích tính năng còn thiếu & giải pháp cho Thợ, Khách hàng, Quản trị)*
+- [Lộ Trình Phát Triển Sản Phẩm](docs/ROADMAP.md)
+- [Quy Tắc Nghiệp Vụ](docs/BUSINESS_RULES.md)
+- [Kiến Trúc Hệ Thống](docs/ARCHITECTURE.md)
+- [Thiết Kế Cơ Sở Dữ Liệu](docs/DATABASE.md)
+

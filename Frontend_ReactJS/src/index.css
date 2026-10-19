@@ -5,9 +5,17 @@
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
+@variant dark (&:where(.dark, .dark *));
 
 html {
   font-family: var(--font-sans);
+  scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  overflow-x: hidden;
 }
 
 /* Ẩn thanh cuộn dọc và ngang nhưng vẫn cho phép cuộn */
@@ -18,3 +26,4 @@ html {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+

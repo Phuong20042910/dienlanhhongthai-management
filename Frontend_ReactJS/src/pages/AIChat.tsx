@@ -91,11 +91,8 @@ export const AIChat = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-6rem)] bg-gradient-to-br from-white to-gray-50 dark:from-[#0B1120] dark:via-[#111827] dark:to-[#0F172A] rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden relative">
-      {/* Background Decorative Blobs */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 dark:bg-blue-500/5 blur-[100px] rounded-full"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 dark:bg-purple-500/5 blur-[100px] rounded-full"></div>
-      </div>
+      {/* Background Decorative Gradient (GPU-friendly) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 bg-[radial-gradient(ellipse_50%_50%_at_0%_0%,rgba(59,130,246,0.08),transparent_70%),radial-gradient(ellipse_50%_50%_at_100%_100%,rgba(168,85,247,0.08),transparent_70%)] dark:bg-[radial-gradient(ellipse_50%_50%_at_0%_0%,rgba(59,130,246,0.1),transparent_70%),radial-gradient(ellipse_50%_50%_at_100%_100%,rgba(168,85,247,0.1),transparent_70%)]" />
 
       {/* Header */}
       <div className="relative z-10 p-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-between shadow-md">

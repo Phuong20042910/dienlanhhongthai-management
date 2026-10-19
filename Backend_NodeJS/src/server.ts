@@ -21,6 +21,8 @@ import path from 'path';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import { initDatabaseExtensions } from './config/initDb';
+
 
 dotenv.config();
 
@@ -98,8 +100,10 @@ app.get('/api/health', async (req: Request, res: Response) => {
 });
 
 // Start Server
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`🚀 Server is running on http://localhost:${PORT}`);
   console.log(`🔌 Socket.IO server is active on ws://localhost:${PORT}`);
   console.log(`📖 Swagger API Docs are available at http://localhost:${PORT}/api-docs`);
+  await initDatabaseExtensions();
 });
+

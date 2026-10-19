@@ -11,26 +11,31 @@ import {
   User,
   ShoppingCart,
   Wallet,
-  Package
+  Package,
+  Search,
+  Globe
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 const adminNavItems = [
-  { name: 'Tổng quan', icon: LayoutDashboard, path: '/' },
+  { name: 'Tổng quan', icon: LayoutDashboard, path: '/dashboard' },
   { name: 'Đơn hàng', icon: ClipboardList, path: '/orders' },
+  { name: 'Tra cứu đơn khách', icon: Search, path: '/tra-cuu' },
   { name: 'Kỹ thuật viên', icon: Wrench, path: '/technicians' },
   { name: 'Khách hàng', icon: Users, path: '/customers' },
   { name: 'Kho vật tư', icon: Package, path: '/inventory' },
   { name: 'Quản lý Lương', icon: Banknote, path: '/payslips' },
   { name: 'Trợ lý AI', icon: Bot, path: '/ai-chat' },
+  { name: 'Trang chủ Website', icon: Globe, path: '/' },
   { name: 'Hồ sơ', icon: User, path: '/profile' },
 ];
 
 const techNavItems = [
-  { name: 'Tổng quan', icon: LayoutDashboard, path: '/' },
+  { name: 'Tổng quan', icon: LayoutDashboard, path: '/dashboard' },
   { name: 'Đơn của tôi', icon: ClipboardList, path: '/orders' },
   { name: 'Lương & Hoa hồng', icon: Banknote, path: '/payslips' },
   { name: 'Trợ lý AI', icon: Bot, path: '/ai-chat' },
+  { name: 'Trang chủ Website', icon: Globe, path: '/' },
   { name: 'Hồ sơ', icon: User, path: '/profile' },
 ];
 
@@ -39,8 +44,10 @@ const customerNavItems = [
   { name: 'Cửa hàng', icon: ShoppingCart, path: '/shop' },
   { name: 'Sổ nợ', icon: Wallet, path: '/debts' },
   { name: 'Trợ lý AI', icon: Bot, path: '/ai-chat' },
+  { name: 'Trang chủ Website', icon: Globe, path: '/' },
   { name: 'Hồ sơ', icon: User, path: '/profile' },
 ];
+
 
 export const Sidebar = ({ isOpen, toggleSidebar }: { isOpen: boolean, toggleSidebar: () => void }) => {
   const logout = useAuthStore((state) => state.logout);

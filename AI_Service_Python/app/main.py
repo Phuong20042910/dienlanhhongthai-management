@@ -79,9 +79,11 @@ def chat_ai(payload: ChatRequest):
 
     reply_text = gemini_service.chat_with_ai(
         message=payload.message,
-        context=payload.context
+        context=payload.context,
+        provider=payload.provider or "gemini"
     )
     return ChatResponse(reply=reply_text)
+
 
 @app.get("/api/external/fetch-product", response_model=ProductInfo, summary="Tìm kiếm và cào dữ liệu sản phẩm từ web ngoài")
 def fetch_product_external(q: str):

@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Wrench, Loader2 } from 'lucide-react';
+import { Wrench, Loader2, ArrowLeft, Home, Sun, Moon } from 'lucide-react';
 import api from '../utils/api';
 import { useAuthStore } from '../store/authStore';
+import { useThemeStore } from '../store/themeStore';
 import toast from 'react-hot-toast';
 
 const loginSchema = z.object({
@@ -18,7 +19,22 @@ type LoginForm = z.infer<typeof loginSchema>;
 export const Login = () => {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
+  const isDarkMode = useThemeStore((state) => state.isDarkMode);
+  const toggleDarkMode = useThemeStore((state) => state.toggleDarkMode);
   const [error, setError] = useState('');
+
+  // Nếu người dùng đã đăng nhập từ trước, tự động chuyển về Dashboard hoặc Đơn hàng
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (user?.role === 'TECHNICIAN' || user?.role === 'CUSTOMER') {
+        navigate('/orders', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const {
     register,
@@ -38,7 +54,11 @@ export const Login = () => {
 
       const { user, token } = response.data;
       setAuth(user, token);
-      navigate('/');
+      if (user.role === 'TECHNICIAN' || user.role === 'CUSTOMER') {
+        navigate('/orders');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Đã có lỗi xảy ra khi đăng nhập');
     }
@@ -46,12 +66,31 @@ export const Login = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-300">
-      
-      {/* Background Decorators */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-blue-400/20 dark:bg-blue-900/20 blur-[120px]"></div>
-        <div className="absolute top-[60%] -right-[10%] w-[40%] h-[60%] rounded-full bg-indigo-400/20 dark:bg-indigo-900/20 blur-[120px]"></div>
+      {/* Nút quay lại Landing Page ở góc trên bên trái */}
+      <div className="absolute top-6 left-6 z-20">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur border border-gray-200 dark:border-gray-800 text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 shadow-sm transition-all"
+        >
+          <ArrowLeft size={16} />
+          <span>Về Trang chủ Website</span>
+        </Link>
       </div>
+
+      {/* Nút chuyển đổi Theme Sáng / Tối ở góc trên bên phải */}
+      <div className="absolute top-6 right-6 z-20">
+        <button
+          type="button"
+          onClick={toggleDarkMode}
+          className="p-2.5 rounded-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 shadow-sm transition-all cursor-pointer"
+          title={isDarkMode ? 'Chuyển sang Giao diện Sáng' : 'Chuyển sang Giao diện Tối'}
+        >
+          {isDarkMode ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} />}
+        </button>
+      </div>
+      
+      {/* Background Decorators (GPU-friendly Radial Gradients) */}
+      <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none bg-[radial-gradient(ellipse_60%_60%_at_20%_20%,rgba(59,130,246,0.12),transparent_70%),radial-gradient(ellipse_60%_60%_at_80%_80%,rgba(99,102,241,0.12),transparent_70%)] dark:bg-[radial-gradient(ellipse_60%_60%_at_20%_20%,rgba(59,130,246,0.15),transparent_70%),radial-gradient(ellipse_60%_60%_at_80%_80%,rgba(99,102,241,0.15),transparent_70%)]" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center relative z-10">
         <div className="flex justify-center">
@@ -68,7 +107,7 @@ export const Login = () => {
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl py-8 px-4 shadow-2xl sm:rounded-3xl sm:px-10 border border-white/20 dark:border-gray-800 transition-colors duration-300">
+        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md py-8 px-4 shadow-xl sm:rounded-3xl sm:px-10 border border-white/40 dark:border-gray-800 transition-colors duration-200">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             {error && (
               <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-xl text-sm text-center font-medium border border-red-100 dark:border-red-900/50">
@@ -156,9 +195,19 @@ export const Login = () => {
                 Đăng ký ngay
               </Link>
             </div>
+
+            <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-800 text-center">
+              <Link
+                to="/tra-cuu"
+                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-xl text-xs font-bold transition-all border border-blue-200 dark:border-blue-900"
+              >
+                🔍 Khách hàng tra cứu đơn & bảo hành (Không cần đăng nhập)
+              </Link>
+            </div>
           </form>
         </div>
       </div>
     </div>
+
   );
 };

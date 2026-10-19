@@ -22,9 +22,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Optional: Handle token expiration
       useAuthStore.getState().logout();
-      window.location.href = '/login';
+      // Chỉ redirect về login nếu đang ở các trang quản trị nội bộ cần đăng nhập
+      const path = window.location.pathname;
+      const isPublicPath = path === '/' || path === '/landing' || path.startsWith('/tra-cuu') || path.startsWith('/login') || path.startsWith('/register');
+      if (!isPublicPath) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

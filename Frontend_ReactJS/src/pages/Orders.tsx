@@ -5,7 +5,9 @@ import { ClipboardList, Plus } from 'lucide-react';
 import { OrderFormModal } from '../components/OrderFormModal';
 import { OrdersTable } from '../components/OrdersTable';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { InvoiceModal } from '../components/InvoiceModal';
 import toast from 'react-hot-toast';
+
 
 export const Orders = () => {
   const getStatusColor = (status: string) => {
@@ -34,6 +36,7 @@ export const Orders = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [invoiceOrder, setInvoiceOrder] = useState<any | null>(null);
   const token = useAuthStore((state) => state.token);
 
   const fetchOrders = async () => {
@@ -89,6 +92,7 @@ export const Orders = () => {
         getStatusText={getStatusText} 
         onDelete={(id) => setDeleteId(id)}
         onEdit={handleEdit}
+        onPrint={(order) => setInvoiceOrder(order)}
       />
       
       <OrderFormModal 
@@ -107,6 +111,15 @@ export const Orders = () => {
         confirmText="Xóa"
         isDestructive={true}
       />
+
+      {invoiceOrder && (
+        <InvoiceModal
+          isOpen={true}
+          order={invoiceOrder}
+          onClose={() => setInvoiceOrder(null)}
+        />
+      )}
     </div>
   );
 };
+

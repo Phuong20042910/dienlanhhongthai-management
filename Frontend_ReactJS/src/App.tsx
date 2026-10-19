@@ -21,6 +21,10 @@ import { Toaster } from 'react-hot-toast';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { Profile } from './pages/Profile';
 import { PayrollManagement } from './pages/PayrollManagement';
+import { PublicOrderLookup } from './pages/PublicOrderLookup';
+import { LandingPage } from './pages/LandingPage';
+
+
 
 // Protected Route Component
 const ProtectedRoute = () => {
@@ -69,26 +73,31 @@ function App() {
     <BrowserRouter>
       <Toaster position="top-right" />
       <Routes>
-        {/* Public Route */}
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/tra-cuu" element={<PublicOrderLookup />} />
 
-        {/* Protected Routes */}
+        {/* Protected Routes (Hệ thống quản lý nội bộ) */}
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="orders" element={<OrdersRoute />} />
-            <Route path="shop" element={<CustomerShop />} />
-            <Route path="debts" element={<CustomerDebts />} />
-            <Route path="technicians" element={<Technicians />} />
-            <Route path="customers" element={<Customers />} />
-            <Route path="inventory" element={<Inventory />} />
-            <Route path="payslips" element={<PayrollRoute />} />
-            <Route path="ai-chat" element={<AIChat />} />
-            <Route path="profile" element={<Profile />} />
+          <Route element={<MainLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/app" element={<Dashboard />} />
+            <Route path="/orders" element={<OrdersRoute />} />
+            <Route path="/shop" element={<CustomerShop />} />
+            <Route path="/debts" element={<CustomerDebts />} />
+            <Route path="/technicians" element={<Technicians />} />
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/payslips" element={<PayrollRoute />} />
+            <Route path="/ai-chat" element={<AIChat />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
         </Route>
+
 
         {/* Fallback route */}
         <Route path="*" element={<Navigate to="/" replace />} />

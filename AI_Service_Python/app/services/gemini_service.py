@@ -23,7 +23,10 @@ class GeminiAIService:
         if not self.api_key or self.api_key == "your_gemini_api_key_here":
             return None
 
-        headers = {"Content-Type": "application/json"}
+        headers = {
+            "Content-Type": "application/json",
+            "x-goog-api-key": self.api_key
+        }
 
         for model_name in self.model_candidates:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={self.api_key}"
@@ -32,9 +35,10 @@ class GeminiAIService:
                 if res.status_code == 200:
                     return res.json()
                 else:
-                    print(f"API Error ({model_name}): {res.status_code}")
+                    print(f"Gemini API Error ({model_name}): {res.status_code} - {res.text[:150]}")
             except Exception as e:
-                print(f"Connection Error ({model_name})")
+                print(f"Connection Error ({model_name}): {e}")
+
 
         # Fallback sang Groq neu Gemini that bai (danh cho text)
         if not is_image:
@@ -48,7 +52,59 @@ class GeminiAIService:
             except Exception as e:
                 print(f"Groq fallback error: {e}")
 
+        # Fallback sang OpenRouter (hỗ trợ cả Text và Vision ảnh)
+        if self.openrouter_api_key:
+            try:
+                if not is_image:
+                    text_prompt = payload.get("contents", [{}])[0].get("parts", [{}])[0].get("text", "")
+                    if text_prompt:
+                        or_payload = {
+                            "model": "openai/gpt-4o-mini",
+                            "messages": [{"role": "user", "content": text_prompt}]
+                        }
+                        or_res = self._call_openrouter_api(or_payload)
+                        if or_res and 'choices' in or_res and len(or_res['choices']) > 0:
+                            reply_text = or_res['choices'][0]['message']['content']
+                            return {
+                                "candidates": [
+                                    {"content": {"parts": [{"text": reply_text}]}}
+                                ]
+                            }
+                else:
+                    image_b64 = None
+                    prompt_txt = ""
+                    for part in payload.get("contents", [{}])[0].get("parts", []):
+                        if "inline_data" in part:
+                            image_b64 = part["inline_data"].get("data")
+                        elif "text" in part:
+                            prompt_txt = part.get("text", "")
+
+                    if image_b64 and prompt_txt:
+                        or_payload = {
+                            "model": "openai/gpt-4o-mini",
+                            "messages": [
+                                {
+                                    "role": "user",
+                                    "content": [
+                                        {"type": "text", "text": prompt_txt},
+                                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}}
+                                    ]
+                                }
+                            ]
+                        }
+                        or_res = self._call_openrouter_api(or_payload)
+                        if or_res and 'choices' in or_res and len(or_res['choices']) > 0:
+                            reply_text = or_res['choices'][0]['message']['content']
+                            return {
+                                "candidates": [
+                                    {"content": {"parts": [{"text": reply_text}]}}
+                                ]
+                            }
+            except Exception as e:
+                print(f"OpenRouter fallback error: {e}")
+
         return None
+
 
     def _call_openrouter_api(self, payload: dict) -> Optional[dict]:
         """Gọi OpenRouter API (OpenAI compatible)"""
@@ -227,35 +283,34 @@ class GeminiAIService:
                 ]
             }
             result_json = self._call_openrouter_api(or_payload)
-            if result_json:
+            if result_json and 'choices' in result_json and len(result_json['choices']) > 0:
                 try:
                     raw_reply = result_json['choices'][0]['message']['content']
                     return self._clean_text(raw_reply)
                 except Exception:
                     pass
-            return self._clean_text(self._fallback_chat(message, context, "OpenRouter API Key không hợp lệ hoặc lỗi mạng."))
-        
-        else:
-            # Mặc định dùng Gemini
-            full_prompt = f"{system_instruction}\n\n[Bối cảnh lịch sử trò chuyện]:\n{context or 'Chưa có lịch sử'}\n\n[Câu hỏi mới từ người dùng]: {message}"
 
-            payload = {
-                "contents": [
-                    {
-                        "parts": [{"text": full_prompt}]
-                    }
-                ]
-            }
+        # Mặc định gọi Gemini (đã tích hợp tự động dự phòng sang Groq & OpenRouter nếu Gemini lỗi)
+        full_prompt = f"{system_instruction}\n\n[Bối cảnh lịch sử trò chuyện]:\n{context or 'Chưa có lịch sử'}\n\n[Câu hỏi mới từ người dùng]: {message}"
 
-            result_json = self._call_gemini_api(payload)
-            if result_json:
-                try:
-                    raw_reply = result_json['candidates'][0]['content']['parts'][0]['text']
-                    return self._clean_text(raw_reply)
-                except Exception:
-                    pass
+        payload = {
+            "contents": [
+                {
+                    "parts": [{"text": full_prompt}]
+                }
+            ]
+        }
 
-            return self._clean_text(self._fallback_chat(message, context))
+        result_json = self._call_gemini_api(payload)
+        if result_json and 'candidates' in result_json and len(result_json['candidates']) > 0:
+            try:
+                raw_reply = result_json['candidates'][0]['content']['parts'][0]['text']
+                return self._clean_text(raw_reply)
+            except Exception:
+                pass
+
+        return self._clean_text(self._fallback_chat(message, context))
+
 
     def _fallback_chat(self, message: str, context: Optional[str] = None, custom_error: str = "") -> str:
         error_msg = custom_error if custom_error else "**Mã Google Gemini API Key trong file `.env` không hợp lệ hoặc đã hết hạn**."

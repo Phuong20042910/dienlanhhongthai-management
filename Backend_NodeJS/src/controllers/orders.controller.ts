@@ -312,5 +312,143 @@ export const ordersController = {
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
+  },
+
+  // Tra cứu đơn hàng công khai không cần login (Public Tracking)
+  async lookupOrder(req: Request, res: Response) {
+    try {
+      const { q } = req.query;
+      if (!q || typeof q !== 'string') {
+        return res.status(400).json({ error: 'Vui lòng nhập Số điện thoại hoặc Mã đơn hàng' });
+      }
+
+      const searchVal = q.trim();
+
+      let query = supabase
+        .from('orders')
+        .select(`
+          id, order_code, status, service_type, description, address,
+          created_at, completed_at, total_amount, sub_total, discount, payment_status,
+          before_images, after_images, customer_signature, rating, review, device_brand, device_type,
+          customers(id, full_name, phone),
+          technicians(id, users(full_name, phone))
+        `);
+
+      if (searchVal.toUpperCase().startsWith('ORD-') || searchVal.toUpperCase().startsWith('DH-')) {
+        query = query.ilike('order_code', searchVal);
+      } else {
+        // Tìm theo số điện thoại khách hàng
+        const { data: customer } = await supabase
+          .from('customers')
+          .select('id')
+          .eq('phone', searchVal)
+          .single();
+
+        if (customer) {
+          query = query.eq('customer_id', customer.id);
+        } else {
+          return res.json([]);
+        }
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false }).limit(10);
+      if (error) throw error;
+      res.json(data || []);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  // Đánh giá đơn hàng công khai (Rating & Review)
+  async publicReview(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { rating, review } = req.body;
+
+      if (!rating || rating < 1 || rating > 5) {
+        return res.status(400).json({ error: 'Đánh giá số sao từ 1 đến 5' });
+      }
+
+      const { data, error } = await supabase
+        .from('orders')
+        .update({ rating, review })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      res.json(data);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  // Đặt lịch hẹn công khai từ Landing Page không cần đăng nhập
+  async publicBookOrder(req: Request, res: Response) {
+
+    try {
+      const { full_name, phone, service_type, device_brand, address, description } = req.body;
+
+      if (!full_name || !phone || !address || !service_type) {
+        return res.status(400).json({ error: 'Vui lòng cung cấp đầy đủ Họ tên, Số điện thoại, Dịch vụ và Địa chỉ' });
+      }
+
+      const cleanPhone = phone.trim().replace(/[^0-9]/g, '');
+
+      // 1. Kiểm tra hoặc tạo mới khách hàng
+      let { data: cus } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('phone', cleanPhone)
+        .single();
+
+      if (!cus) {
+        const { data: newCus, error: createCusErr } = await supabase
+          .from('customers')
+          .insert([{
+            full_name: full_name.trim(),
+            phone: cleanPhone,
+            address: address.trim(),
+            note: 'Khách đặt từ Landing Page'
+          }])
+          .select('id')
+          .single();
+
+        if (createCusErr) throw createCusErr;
+        cus = newCus;
+      }
+
+      // 2. Tạo mã đơn và đơn hàng
+      const order_code = generateOrderCode();
+
+      const { data: newOrder, error: orderErr } = await supabase
+        .from('orders')
+        .insert([{
+          order_code,
+          customer_id: cus.id,
+          service_type: service_type.trim(),
+          device_brand: device_brand || null,
+          description: description || null,
+          address: address.trim(),
+          priority: 'NORMAL',
+          status: 'PENDING',
+          payment_status: 'UNPAID',
+          is_warranty: false
+        }])
+        .select(`
+          *,
+          customers(id, full_name, phone)
+        `)
+        .single();
+
+      if (orderErr) throw orderErr;
+
+      res.status(201).json(newOrder);
+    } catch (error: any) {
+      console.error('Lỗi đặt lịch công khai:', error);
+      res.status(500).json({ error: error.message });
+    }
   }
 };
+
+

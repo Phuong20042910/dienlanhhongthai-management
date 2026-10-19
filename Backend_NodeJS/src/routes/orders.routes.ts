@@ -4,7 +4,15 @@ import { requireAuth } from '../middleware/auth.middleware';
 
 const router = Router();
 
+// Public routes (Không cần đăng nhập)
+router.get('/lookup', ordersController.lookupOrder);
+router.post('/public-review/:id', ordersController.publicReview);
+router.post('/public-book', ordersController.publicBookOrder);
+
+// Các routes nội bộ yêu cầu đăng nhập
+
 router.use(requireAuth);
+
 
 /**
  * @openapi
